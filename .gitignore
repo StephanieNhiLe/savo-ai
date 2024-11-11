@@ -3,6 +3,8 @@ backend/venv
 .env
 backend/.env
 .flutter-plugins
+backend/__pycache__
 
 flutter/
 flutter/**
+flutter

@@ -142,9 +142,9 @@ class HomeScreen extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
-            ChatTab(), // Voice/Text Chat Tab
-            LocationSharing(), // Circle Safety & Location Tracking Tab
-            MoodTracker(), // Mood and Progress Tracking Tab
+            ChatTab(), 
+            LocationSharing(),  
+            MoodTracker(), 
           ],
         ),
         bottomNavigationBar: TabBar(
