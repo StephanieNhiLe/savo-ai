@@ -1,0 +1,7 @@
+venv/
+backend/venv
+.env
+backend/.env
+.flutter-plugins
+
+flutter/
