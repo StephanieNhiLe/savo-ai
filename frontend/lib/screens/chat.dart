@@ -1,4 +1,3 @@
-// frontend/lib/tabs/chat_tab.dart
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
@@ -15,44 +14,94 @@ class _ChatTabState extends State<ChatTab> {
   final FlutterTts _flutterTts = FlutterTts();
   stt.SpeechToText _speech = stt.SpeechToText();
   bool _isListening = false;
-  String _response = '';
+  List<Map<String, String>> _messages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeTts();
+  }
+
+  Future<void> _initializeTts() async {
+    await _flutterTts.setLanguage("en-US");
+    // await _flutterTts.setSpeechRate(0.5);   
+    // await _flutterTts.setPitch(1.1);      
+    // await _flutterTts.setVolume(0.8);     
+     
+    var voices = await _flutterTts.getVoices;
+    for (dynamic voice in voices) {
+      // await flutterTts.setVoice({'name': 'en-us-x-iol-local', 'locale': 'en-US'});
+      if (voice['name'].toString().toLowerCase().contains('samantha') ||
+          voice['name'].toString().toLowerCase().contains('karen')) {
+        await _flutterTts.setVoice(voice['name']);
+        break;
+      }
+    }
+  }
 
   Future<void> _sendMessage(String message) async {
-    final response = await http.post(
-      Uri.parse('https://api.openai.com/v1/chat/completions'),
-      headers: {
-        'Authorization': 'Bearer YOUR_OPENAI_API_KEY',
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        'model': 'gpt-3.5-turbo',
-        'messages': [{'role': 'user', 'content': message}],
-      }),
-    );
+    if (message.trim().isEmpty) return;
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+    setState(() {
+      _messages.add({'role': 'user', 'content': message});
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:5000/chat'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'message': message}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        String aiResponse = data['response'];
+
+        setState(() {
+          _messages.add({'role': 'ai', 'content': aiResponse});
+        });
+
+        // await Future.delayed(Duration(milliseconds: 500));
+        await _flutterTts.speak(aiResponse);
+      } else {
+        setState(() {
+          _messages.add({
+            'role': 'ai',
+            'content': 'Sorry, I encountered an error. Please try again.'
+          });
+        });
+      }
+    } catch (e) {
       setState(() {
-        _response = data['choices'][0]['message']['content'];
+        _messages.add({
+          'role': 'ai',
+          'content': 'Network error. Please check your connection.'
+        });
       });
-      await _flutterTts.speak(_response); // Convert text response to speech
-    } else {
-      // Handle error
-      print('Error: ${response.statusCode}');
     }
   }
 
   void _startListening() async {
-    await _speech.initialize();
-    _speech.listen(onResult: (result) {
-      setState(() {
-        _controller.text = result.recognizedWords;
-      });
-    });
+    bool available = await _speech.initialize(
+      onStatus: (status) => print('status: $status'),
+      onError: (error) => print('error: $error'),
+    );
+    
+    if (available) {
+      setState(() => _isListening = true);
+      _speech.listen(
+        onResult: (result) {
+          setState(() {
+            _controller.text = result.recognizedWords;
+          });
+        },
+      );
+    }
   }
 
   void _stopListening() {
     _speech.stop();
+    setState(() => _isListening = false);
   }
 
   @override
@@ -60,38 +109,75 @@ class _ChatTabState extends State<ChatTab> {
     return Column(
       children: [
         Expanded(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Text(_response), // Display AI response
-              ],
-            ),
+          child: ListView.builder(
+            itemCount: _messages.length,
+            padding: EdgeInsets.all(16),
+            itemBuilder: (context, index) {
+              final message = _messages[index];
+              return Padding(
+                padding: EdgeInsets.symmetric(vertical: 4),
+                child: Card(
+                  color: message['role'] == 'user' 
+                    ? Colors.blue.shade50 
+                    : Colors.green.shade50,
+                  child: Padding(
+                    padding: EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          message['role'] == 'user' ? 'You' : 'Safov AI',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          message['content']!,
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ),
-        TextField(
-          controller: _controller,
-          decoration: InputDecoration(
-            labelText: 'Type a message or use voice',
-            suffixIcon: IconButton(
-              icon: Icon(_isListening ? Icons.mic : Icons.mic_none),
-              onPressed: () {
-                setState(() {
-                  _isListening = !_isListening;
-                  if (_isListening) {
-                    _startListening();
-                  } else {
-                    _stopListening();
-                  }
-                });
-              },
+        Padding(
+          padding: EdgeInsets.all(8),
+          child: TextField(
+            controller: _controller,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.grey[100],
+              labelText: 'Type a message or use voice',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _isListening ? Icons.mic : Icons.mic_none,
+                  color: _isListening ? Colors.red : Colors.grey,
+                ),
+                onPressed: _isListening ? _stopListening : _startListening,
+              ),
             ),
+            onSubmitted: (value) {
+              _sendMessage(value);
+              _controller.clear();
+            },
           ),
-          onSubmitted: (value) {
-            _sendMessage(value);
-            _controller.clear();
-          },
         ),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    _flutterTts.stop();
+    super.dispose();
   }
 }

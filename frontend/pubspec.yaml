@@ -33,11 +33,15 @@ dependencies:
   http: ^1.2.2
   speech_to_text: ^7.0.0
   flutter_tts: ^4.0.2
+  shelf: ^1.2.0
+  shelf_router: ^1.0.0
+  dotenv: ^4.2.0
 
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  google_generative_ai: ^0.4.6
 
 dev_dependencies:
   flutter_test:
