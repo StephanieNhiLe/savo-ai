@@ -1,9 +1,10 @@
-from flask import Flask, jsonify, request
+import os
+from flask import Flask, jsonify, request, Response, stream_with_context
 from flask_cors import CORS
-from gemini_ai import get_therapist_response  # Import the function from the new file
+from gemini_ai import get_therapist_response
+from text_to_speech import convert_text_to_speech
 
 app = Flask(__name__)
-# CORS(app, resources={r"/*": {"origins": "http://localhost:3000", "methods": ["GET", "POST", "OPTIONS"]}})
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 @app.route('/', methods=['GET'])
@@ -14,14 +15,33 @@ def home():
 def chat():
     data = request.get_json()
     user_message = data.get('message')
+    voice_id = data.get('voice_id', 'EXAVITQu4vr4xnSDxMaL')  
 
     try:
-        response = get_therapist_response(user_message)  # Call the function to get the response
-        return jsonify({'response': response}), 200
-    except Exception as e:
-        # Log the error details
+        text_response = get_therapist_response(user_message, voice_id)
+        return jsonify({'text': text_response}), 200
+    except Exception as e: 
         print(f"Error processing message: {user_message}")
         print(f"Exception: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/stream_audio', methods=['POST'])
+def stream_audio():
+    data = request.get_json()
+    text = data.get('text')
+    voice_id = data.get('voice_id', 'EXAVITQu4vr4xnSDxMaL')
+
+    if not text:
+        return jsonify({'error': 'No text provided'}), 400
+
+    try:
+        audio_stream = convert_text_to_speech(text, voice_id)
+        return Response(
+            stream_with_context(audio_stream),
+            mimetype='audio/mpeg'
+        )
+    except Exception as e:
+        print(f"Error streaming audio: {e}")
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
