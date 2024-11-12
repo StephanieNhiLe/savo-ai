@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/chat.dart';
 import 'screens/location_sharing.dart';
 import 'screens/mood_tracker.dart';
+import 'screens/voice_chat.dart';
 
 void main() {
   runApp(const MyApp());
@@ -142,6 +143,7 @@ class HomeScreen extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
+            VoiceChat(),
             ChatTab(), 
             LocationSharing(),  
             MoodTracker(), 
@@ -149,6 +151,7 @@ class HomeScreen extends StatelessWidget {
         ),
         bottomNavigationBar: TabBar(
           tabs: [
+            Tab(text: 'Voice Chat', icon: Icon(Icons.mic)),
             Tab(text: 'Chat', icon: Icon(Icons.chat)),
             Tab(text: 'Location', icon: Icon(Icons.location_on)),
             Tab(text: 'Mood', icon: Icon(Icons.mood)),
