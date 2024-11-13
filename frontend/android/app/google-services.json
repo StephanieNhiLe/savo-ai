@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "114530351627",
+    "project_id": "savo-ai-ab6f9",
+    "storage_bucket": "savo-ai-ab6f9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:114530351627:android:cae118ea54846d794f650e",
+        "android_client_info": {
+          "package_name": "savo.ai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "114530351627-don3lu0r480lufmmj89a9aus85a9lkd6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1E6n1DrK0Hg2CWx8-aQgZKUx1MzqTymg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "114530351627-don3lu0r480lufmmj89a9aus85a9lkd6.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "114530351627-7n8qpbtkc9o0po0t91uif55s45u8tmmd.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "savo.ai"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

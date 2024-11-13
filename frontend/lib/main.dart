@@ -3,8 +3,18 @@ import 'screens/chat.dart';
 import 'screens/location_sharing.dart';
 import 'screens/mood_tracker.dart';
 import 'screens/voice_chat.dart';
+import 'package:firebase_core/firebase_core.dart'; 
+import 'services/firebase_options.dart'; 
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:firebase_core/firebase_core.dart';
+import 'package:google_maps_flutter_web/google_maps_flutter_web.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  await Firebase.initializeApp(
+    options: kIsWeb ? DefaultFirebaseOptions.web : null,
+  );
   runApp(const MyApp());
 }
 
