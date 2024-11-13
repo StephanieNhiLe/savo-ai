@@ -31,6 +31,34 @@
 
   <title>frontend</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Google Maps API -->
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCaZdSys3leyf3XhRMrMNq9tPKasc6x9Ck"
+    async
+    defer
+  ></script>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCOGLX0QQlQY0mFnE3zSB-sugIniMmaC-U",
+      authDomain: "savo-ai-ab6f9.firebaseapp.com",
+      projectId: "savo-ai-ab6f9",
+      storageBucket: "savo-ai-ab6f9.firebasestorage.app",
+      messagingSenderId: "114530351627",
+      appId: "1:114530351627:web:feece3ad7861e97e4f650e",
+      measurementId: "G-SKX8HJRT70"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    // const app = initializeApp(firebaseConfig);
+    // const analytics = getAnalytics(app);
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
