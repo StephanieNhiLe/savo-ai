@@ -126,7 +126,6 @@ class _LocationSharingState extends State<LocationSharing> {
             myLocationEnabled: true,
             myLocationButtonEnabled: true,
             onCameraMove: (CameraPosition position) {
-              // Optionally, update camera position when moved
             },
           );
         },
