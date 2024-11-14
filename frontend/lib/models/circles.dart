@@ -517,13 +517,13 @@ class _CirclesScreenState extends State<CirclesScreen> with SingleTickerProvider
   void _checkIn(String circleId) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('User checked in at circle $circleName'),
+        content: Text('User checked in at circle $circleId'),
         duration: Duration(seconds: 3),  
       ),
     );
     print('User checked in at circle: $circleId');
   }
-
+ 
   void _sendSOS(String circleId) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

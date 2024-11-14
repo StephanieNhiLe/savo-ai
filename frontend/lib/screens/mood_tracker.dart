@@ -1,4 +1,3 @@
-// frontend/lib/tabs/mood_tab.dart
 import 'package:flutter/material.dart';
 
 class MoodTracker extends StatelessWidget {

@@ -155,7 +155,7 @@ class HomeScreen extends StatelessWidget {
         body: TabBarView(
           children: [
             VoiceChat(),
-            ChatTab(), 
+            // ChatTab(), 
             CirclesScreen(),
             MoodTracker(), 
           ],
@@ -163,9 +163,9 @@ class HomeScreen extends StatelessWidget {
         bottomNavigationBar: TabBar(
           tabs: [
             Tab(text: 'Voice Chat', icon: Icon(Icons.mic)),
-            Tab(text: 'Chat', icon: Icon(Icons.chat)),
-            Tab(text: 'Location', icon: Icon(Icons.location_on)),
-            Tab(text: 'Mood', icon: Icon(Icons.mood)),
+            // Tab(text: 'Chat', icon: Icon(Icons.chat)),
+            Tab(text: 'Location Sharing', icon: Icon(Icons.location_on)),
+            Tab(text: 'Mood Tracker', icon: Icon(Icons.mood)),
           ],
           labelColor: Colors.blue,
           unselectedLabelColor: Colors.grey,
