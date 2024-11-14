@@ -41,3 +41,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Ignore AndroidManifest.xml
+/android/app/src/main/AndroidManifest.xml
+
+# Ignore AppDelegate.swift
+/ios/Runner/AppDelegate.swift
