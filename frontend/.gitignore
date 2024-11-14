@@ -42,6 +42,8 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+/ios
+
 # Ignore AndroidManifest.xml
 /android/app/src/main/AndroidManifest.xml
 
