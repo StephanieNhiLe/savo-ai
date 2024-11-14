@@ -1,0 +1,26 @@
+/Users/stephanienhile/git/Hack/savo-ai/frontend/ios/Pods/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/BoringSSL-GRPC-framework/openssl_grpc.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/FirebaseAppCheckInterop-framework/FirebaseAppCheckInterop.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/FirebaseCore-framework/FirebaseCore.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/FirebaseCoreExtension-framework/FirebaseCoreExtension.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/FirebaseCoreInternal-framework/FirebaseCoreInternal.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/FirebaseFirestore-framework/FirebaseFirestore.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/FirebaseFirestoreInternal-framework/FirebaseFirestoreInternal.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/FirebaseSharedSwift-framework/FirebaseSharedSwift.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/GoogleUtilities-1ae1c552/GoogleUtilities.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/abseil-framework/absl.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/gRPC-C++-framework/grpcpp.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/gRPC-Core-framework/grpc.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/leveldb-library-framework/leveldb.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/nanopb-framework/nanopb.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/FirebaseAuth/FirebaseAuth.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/FirebaseAuthInterop/FirebaseAuthInterop.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/GTMSessionFetcher/GTMSessionFetcher.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/RecaptchaInterop/RecaptchaInterop.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/Try/Try.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/audio_session/audio_session.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/audioplayers_darwin/audioplayers_darwin.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/geolocator_apple/geolocator_apple.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/just_audio/just_audio.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/path_provider_foundation/path_provider_foundation.framework
+/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/speech_to_text/speech_to_text.framework

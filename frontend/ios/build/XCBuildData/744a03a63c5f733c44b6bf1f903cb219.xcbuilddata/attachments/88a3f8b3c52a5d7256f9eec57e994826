@@ -1,0 +1,23 @@
+{
+  'version': 0,
+  'use-external-names': 'false',
+  'case-sensitive': 'false',
+  'roots': [{
+    'type': 'directory',
+    'name': "/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/FirebaseSharedSwift-framework/FirebaseSharedSwift.framework/Modules"
+    'contents': [{
+      'type': 'file',
+      'name': "module.modulemap",
+      'external-contents': "/Users/stephanienhile/git/Hack/savo-ai/frontend/ios/build/Pods.build/Debug-iphonesimulator/FirebaseSharedSwift-framework.build/unextended-module.modulemap",
+    }]
+    },
+    {
+    'type': 'directory',
+    'name': "/Users/stephanienhile/git/Hack/savo-ai/frontend/build/ios/Debug-iphonesimulator/FirebaseSharedSwift-framework/FirebaseSharedSwift.framework/Headers"
+    'contents': [{
+      'type': 'file',
+      'name': "FirebaseSharedSwift-Swift.h",
+      'external-contents': "/Users/stephanienhile/git/Hack/savo-ai/frontend/ios/build/Pods.build/Debug-iphonesimulator/FirebaseSharedSwift-framework.build/unextended-interface-header.h",
+    }]
+    }]
+}

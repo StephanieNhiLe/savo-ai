@@ -1,0 +1,18 @@
+{
+  "" : {
+    "diagnostics" : "/Users/stephanienhile/git/Hack/savo-ai/frontend/ios/build/Pods.build/Debug-iphonesimulator/Try.build/Objects-normal/x86_64/Try-master.dia",
+    "emit-module-dependencies" : "/Users/stephanienhile/git/Hack/savo-ai/frontend/ios/build/Pods.build/Debug-iphonesimulator/Try.build/Objects-normal/x86_64/Try-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/stephanienhile/git/Hack/savo-ai/frontend/ios/build/Pods.build/Debug-iphonesimulator/Try.build/Objects-normal/x86_64/Try-master-emit-module.dia",
+    "swift-dependencies" : "/Users/stephanienhile/git/Hack/savo-ai/frontend/ios/build/Pods.build/Debug-iphonesimulator/Try.build/Objects-normal/x86_64/Try-master.swiftdeps"
+  },
+  "/Users/stephanienhile/git/Hack/savo-ai/frontend/ios/Pods/Try/Try/trap.swift" : {
+    "const-values" : "/Users/stephanienhile/git/Hack/savo-ai/frontend/ios/build/Pods.build/Debug-iphonesimulator/Try.build/Objects-normal/x86_64/trap.swiftconstvalues",
+    "dependencies" : "/Users/stephanienhile/git/Hack/savo-ai/frontend/ios/build/Pods.build/Debug-iphonesimulator/Try.build/Objects-normal/x86_64/trap.d",
+    "diagnostics" : "/Users/stephanienhile/git/Hack/savo-ai/frontend/ios/build/Pods.build/Debug-iphonesimulator/Try.build/Objects-normal/x86_64/trap.dia",
+    "index-unit-output-path" : "/Pods.build/Debug-iphonesimulator/Try.build/Objects-normal/x86_64/trap.o",
+    "llvm-bc" : "/Users/stephanienhile/git/Hack/savo-ai/frontend/ios/build/Pods.build/Debug-iphonesimulator/Try.build/Objects-normal/x86_64/trap.bc",
+    "object" : "/Users/stephanienhile/git/Hack/savo-ai/frontend/ios/build/Pods.build/Debug-iphonesimulator/Try.build/Objects-normal/x86_64/trap.o",
+    "swift-dependencies" : "/Users/stephanienhile/git/Hack/savo-ai/frontend/ios/build/Pods.build/Debug-iphonesimulator/Try.build/Objects-normal/x86_64/trap.swiftdeps",
+    "swiftmodule" : "/Users/stephanienhile/git/Hack/savo-ai/frontend/ios/build/Pods.build/Debug-iphonesimulator/Try.build/Objects-normal/x86_64/trap~partial.swiftmodule"
+  }
+}

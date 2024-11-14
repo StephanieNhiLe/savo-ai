@@ -11,18 +11,43 @@ class CirclesScreen extends StatefulWidget {
   _CirclesScreenState createState() => _CirclesScreenState();
 }
 
-class _CirclesScreenState extends State<CirclesScreen> {
+class _CirclesScreenState extends State<CirclesScreen> with SingleTickerProviderStateMixin {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   GoogleMapController? _mapController;
   Position? _currentPosition;
   Set<Marker> _markers = {};
   bool _isLoading = true;
   LatLng? _userLocation;
+  final List<Color> markerColors = [Colors.red, Colors.blue, Colors.green, Colors.orange, Colors.purple];
+
+  late AnimationController _animationController;
+  late Animation<double> _animation;
+  bool _isSOSActive = false; 
 
   @override
   void initState() {
     super.initState();
     _initializeLocation();
+    
+    _animationController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    );
+
+    _animation = Tween<double>(begin: 0.0, end: 100.0).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    ));
+
+    _animationController.addListener(() {
+      setState(() {}); 
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   Future<void> _initializeLocation() async {
@@ -47,6 +72,7 @@ class _CirclesScreenState extends State<CirclesScreen> {
 
   void _updateMarkers() async {
     Set<Marker> markers = {};
+    int colorIndex = 0;
 
     if (_currentPosition != null) {
         markers.add(
@@ -57,45 +83,88 @@ class _CirclesScreenState extends State<CirclesScreen> {
             icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
         ),
         );
+    } else {
+        print('Current position is null.'); 
     }
 
-    final circles = await _firestore.collection('circles').get();
-    for (var circle in circles.docs) {
-        final members = await circle.reference.collection('members').get();
-        for (var member in members.docs) {
-        final memberName = member['name'];
-        final lastUpdate = member['lastUpdate'];
-        final battery = member['battery'];
+    try {
+        final circles = await _firestore.collection('circles').get();
+        for (var circle in circles.docs) {
+            if (circle.data().containsKey('location')) {
+                GeoPoint geoPoint = circle['location'];
+                LatLng circleLocation = LatLng(geoPoint.latitude, geoPoint.longitude);
 
-        final lastUpdateTime = (lastUpdate as Timestamp).toDate();
-        final timeAgo = _timeAgo(lastUpdateTime);
+                try {
+                    String colorHex = circle.data().containsKey('color') ? circle['color'] : '#FF0000'; 
+                    Color circleColor = Color(int.parse(colorHex.replaceFirst('#', '0xFF'))); 
 
-        final memberMarker = BitmapDescriptor.fromBytes(
-            await _createMemberMarkerIcon(
-            memberName: memberName,
-            lastUpdate: timeAgo,
-            battery: battery,
-            ),
-        );
+                    double hue = HSLColor.fromColor(circleColor).hue;
 
-        markers.add(
-            Marker(
-            markerId: MarkerId(member.id),
-            position: LatLng(member['latitude'], member['longitude']),
-            infoWindow: InfoWindow(
-                title: memberName,
-                snippet: 'Last seen: $timeAgo',
-            ),
-            icon: memberMarker,
-            ),
-        );
+                    markers.add(
+                        Marker(
+                            markerId: MarkerId('circle_${circle.id}'),
+                            position: circleLocation,
+                            infoWindow: InfoWindow(
+                                title: circle['name'] ?? 'Unnamed Circle',
+                                snippet: 'Circle Location',
+                            ),
+                            icon: BitmapDescriptor.defaultMarkerWithHue(hue),
+                        ),
+                    );
+                } catch (e) {
+                    print('Error processing circle ${circle.id}: $e');
+                }
+            } else {
+                print('Circle document missing location: ${circle.id}');
+            }
+
+            final members = await circle.reference.collection('members').get();
+            for (var member in members.docs) {
+                final memberName = member['name'];
+                final lastUpdate = member['lastUpdate'];
+                final battery = member['battery'];
+
+                if (member.data().containsKey('latitude') && member.data().containsKey('longitude')) {
+                    final lastUpdateTime = (lastUpdate as Timestamp).toDate();
+                    final timeAgo = _timeAgo(lastUpdateTime);
+
+                    final memberMarker = BitmapDescriptor.fromBytes(
+                        await _createMemberMarkerIcon(
+                        memberName: memberName,
+                        lastUpdate: timeAgo,
+                        battery: battery,
+                        ),
+                    );
+
+                    markers.add(
+                        Marker(
+                        markerId: MarkerId(member.id),
+                        position: LatLng(member['latitude'], member['longitude']),
+                        infoWindow: InfoWindow(
+                            title: memberName,
+                            snippet: 'Last seen: $timeAgo',
+                        ),
+                        icon: memberMarker,
+                        ),
+                    );
+                } else {
+                    print('Member document missing latitude or longitude: ${member.id}');
+                }
+            }
         }
+    } catch (e) {
+        print('Error fetching circles or members: $e'); 
     }
 
-    setState(() => _markers = markers);
-    }
+    setState(() {
+        _markers = markers;
+        if (markers.isEmpty) {
+            print('No markers were added.'); 
+        }
+    });
+  }
 
-    Future<Uint8List> _createMemberMarkerIcon({
+  Future<Uint8List> _createMemberMarkerIcon({
     required String memberName,
     required String lastUpdate,
     required int battery,
@@ -149,7 +218,7 @@ class _CirclesScreenState extends State<CirclesScreen> {
               children: [
                 GoogleMap(
                   initialCameraPosition: CameraPosition(
-                    target: _userLocation ?? LatLng(37.7749, -122.4194), // Default location
+                    target: _userLocation ?? LatLng(37.7749, -122.4194),
                     zoom: 14.0,
                   ),
                   onMapCreated: (controller) => _mapController = controller,
@@ -158,6 +227,8 @@ class _CirclesScreenState extends State<CirclesScreen> {
                   myLocationButtonEnabled: true,
                   onCameraMove: (CameraPosition position) {
                   },
+                  // Expanding circle
+                  circles: _isSOSActive ? _createSOSCircle() : Set(),
                 ),
 
                 DraggableScrollableSheet(
@@ -210,7 +281,7 @@ class _CirclesScreenState extends State<CirclesScreen> {
                                       IconButton(
                                         icon: Icon(Icons.add_circle_outline),
                                         onPressed: () {
-                                          // Add circle member logic
+                                          _showAddCircleDialog(context);
                                         },
                                       ),
                                     ],
@@ -222,9 +293,47 @@ class _CirclesScreenState extends State<CirclesScreen> {
                               var circleName = circleData['name'] ?? 'Unnamed Circle';
                               var circleId = circleData.id;
 
+                              GeoPoint geoPoint = circleData['location'];
+                              LatLng circleLocation = LatLng(geoPoint.latitude, geoPoint.longitude);
+
+                              Color circleColor = markerColors[index % markerColors.length];
+
                               return ExpansionTile(
-                                title: Text(circleName),
-                                subtitle: Text('Location: ${circleData['location']}'),
+                                leading: Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: BoxDecoration(
+                                    color: circleColor,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                title: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(circleName, style: TextStyle(fontWeight: FontWeight.bold)),
+                                          Text('Location: ${circleLocation.latitude}, ${circleLocation.longitude}'),
+                                        ],
+                                      ),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        _checkIn(circleId); 
+                                      },
+                                      child: Text('Check In'),
+                                    ),
+                                    // SOS Button
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        _sendSOS(circleId);
+                                      },
+                                      child: Text('SOS'),
+                                    ),
+                                  ],
+                                ),
                                 children: [
                                   StreamBuilder<QuerySnapshot>(
                                     stream: _firestore.collection('circles').doc(circleId).collection('members').snapshots(),
@@ -315,5 +424,136 @@ class _CirclesScreenState extends State<CirclesScreen> {
     } else {
       return 'Just now';
     }
+  }
+
+  // Add Circle Form 
+  void _showAddCircleDialog(BuildContext context) {
+    final _formKey = GlobalKey<FormState>();
+    String? circleName;
+    String? memberName;
+    String? locationAddress;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Add Circle or Member'),
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  decoration: InputDecoration(labelText: 'Circle Name'),
+                  onSaved: (value) {
+                    circleName = value;
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a circle name';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  decoration: InputDecoration(labelText: 'Member Name'),
+                  onSaved: (value) {
+                    memberName = value;
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a member name';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  decoration: InputDecoration(labelText: 'Location Address'),
+                  onSaved: (value) {
+                    locationAddress = value;
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a location address';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  _formKey.currentState!.save();
+                  _addCircleOrMember(circleName, memberName, locationAddress);
+                  Navigator.of(context).pop(); 
+                }
+              },
+              child: Text('Submit'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); 
+              },
+              child: Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _addCircleOrMember(String? circleName, String? memberName, String? locationAddress) {
+    // handle backend w firestore
+    if (circleName != null && memberName != null) {
+      
+    } else if (circleName != null) {
+
+    }
+  }
+
+  void _checkIn(String circleId) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('User checked in at circle $circleName'),
+        duration: Duration(seconds: 3),  
+      ),
+    );
+    print('User checked in at circle: $circleId');
+  }
+
+  void _sendSOS(String circleId) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Sending SOS alert to other circles...'),
+        duration: Duration(seconds: 3),  
+      ),
+    );
+
+    _isSOSActive = true;
+    _animationController.forward().then((_) {
+      _animationController.reset();
+      _isSOSActive = false;
+      setState(() {}); 
+    });
+
+    // Send an SOS alert using Twilio
+    print('SOS alert sent for circle: $circleId');
+  }
+
+  // SOS Signal Custom
+  Set<Circle> _createSOSCircle() {
+    return {
+      Circle(
+        circleId: CircleId('sos_circle'),
+        center: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+        radius: _animation.value,
+        fillColor: Colors.red.withOpacity(0.5),
+        strokeColor: Colors.red,
+        strokeWidth: 2,
+      ),
+    };
   }
 }
