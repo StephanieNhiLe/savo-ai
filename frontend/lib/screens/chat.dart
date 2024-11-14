@@ -126,7 +126,7 @@ class _ChatTabState extends State<ChatTab> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          message['role'] == 'user' ? 'You' : 'Safov AI',
+                          message['role'] == 'user' ? 'You' : 'Savo AI',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 12,

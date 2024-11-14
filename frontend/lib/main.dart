@@ -8,6 +8,7 @@ import 'services/firebase_options.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_maps_flutter_web/google_maps_flutter_web.dart';
+import 'models/circles.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Safov AI',
+      title: 'Savo AI',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -149,13 +150,13 @@ class HomeScreen extends StatelessWidget {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Safov AI'),
+          title: Text('Savo AI'),
         ),
         body: TabBarView(
           children: [
             VoiceChat(),
             ChatTab(), 
-            LocationSharing(),  
+            CirclesScreen(),
             MoodTracker(), 
           ],
         ),
