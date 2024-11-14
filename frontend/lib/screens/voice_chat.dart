@@ -16,6 +16,7 @@ class _VoiceChatState extends State<VoiceChat> {
   bool _isProcessing = false;
   String _userMessage = '';
   String _aiResponse = '';
+  String _sentimentAnalysisResult = '';
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
@@ -78,6 +79,21 @@ class _VoiceChatState extends State<VoiceChat> {
     setState(() => _isProcessing = true);
 
     try { 
+      final sentimentResponse = await http.post(
+        Uri.parse('http://127.0.0.1:5000/analyze_sentiment'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'text': message,
+        }),
+      );
+
+      if (sentimentResponse.statusCode == 200) {
+        final sentimentData = json.decode(sentimentResponse.body);
+        setState(() {
+          _sentimentAnalysisResult = sentimentData['sentiment'];
+        });
+      }
+
       final response = await http.post(
         Uri.parse('http://127.0.0.1:5000/chat'),
         headers: {'Content-Type': 'application/json'},
@@ -92,29 +108,60 @@ class _VoiceChatState extends State<VoiceChat> {
           _aiResponse = data['text'];
         });
  
-        final audioResponse = await http.post(
-          Uri.parse('http://127.0.0.1:5000/stream_audio'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({
-            'text': _aiResponse,
-            'voice_id': 'EXAVITQu4vr4xnSDxMaL',
-          }),
-        );
+        try {
+          final audioResponse = await http.post(
+            Uri.parse('http://127.0.0.1:5000/stream_audio'),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode({
+              'text': _aiResponse,
+              'voice_id': 'EXAVITQu4vr4xnSDxMaL',
+            }),
+          );
 
-        if (audioResponse.statusCode == 200) {
-          final audioBytes = audioResponse.bodyBytes;
-          await _audioPlayer.setAudioSource(
-            AudioSource.uri(
-              Uri.parse('data:audio/mpeg;base64,' + base64Encode(audioBytes)),
+          if (audioResponse.statusCode == 200) {
+            final audioBytes = audioResponse.bodyBytes;
+            await _audioPlayer.setAudioSource(
+              AudioSource.uri(
+                Uri.parse('data:audio/mpeg;base64,' + base64Encode(audioBytes)),
+              ),
+            );
+            await _audioPlayer.play();
+          } else {
+            if (audioResponse.statusCode == 429) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Voice synthesis unavailable - quota exceeded. Please try again later.'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+            } else {
+              print('Failed to stream audio: ${audioResponse.statusCode}');
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to play audio response'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          }
+        } catch (audioError) {
+          print('Audio streaming error: $audioError');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Unable to play audio response'),
+              backgroundColor: Colors.red,
             ),
           );
-          await _audioPlayer.play();
-        } else {
-          print('Failed to stream audio: ${audioResponse.statusCode}');
         }
       }
     } catch (e) {
       print('Exception occurred: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('An error occurred while processing your message'),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
       setState(() => _isProcessing = false);
     }
@@ -136,7 +183,29 @@ class _VoiceChatState extends State<VoiceChat> {
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Text('You: $_userMessage'),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('You: $_userMessage'),
+                            SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Icon(
+                                  _getSentimentIcon(_sentimentAnalysisResult),
+                                  color: _getSentimentColor(_sentimentAnalysisResult),
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Sentiment: $_sentimentAnalysisResult',
+                                  style: TextStyle(
+                                    color: _getSentimentColor(_sentimentAnalysisResult),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   if (_aiResponse.isNotEmpty)
@@ -181,5 +250,31 @@ class _VoiceChatState extends State<VoiceChat> {
   void dispose() {
     _audioPlayer.dispose();
     super.dispose();
+  }
+
+  IconData _getSentimentIcon(String sentiment) {
+    switch (sentiment.toLowerCase()) {
+      case 'positive':
+        return Icons.sentiment_very_satisfied;
+      case 'negative':
+        return Icons.sentiment_very_dissatisfied;
+      case 'neutral':
+        return Icons.sentiment_neutral;
+      default:
+        return Icons.sentiment_neutral;
+    }
+  }
+
+  Color _getSentimentColor(String sentiment) {
+    switch (sentiment.toLowerCase()) {
+      case 'positive':
+        return Colors.green;
+      case 'negative':
+        return Colors.red;
+      case 'neutral':
+        return Colors.grey;
+      default:
+        return Colors.grey;
+    }
   }
 }
