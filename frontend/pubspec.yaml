@@ -49,6 +49,7 @@ dependencies:
 
   shadcn_ui: ^0.15.3
   socket_io_client: ^2.0.0
+  fl_chart: ^0.63.0 
   
 
   # The following adds the Cupertino Icons font to your application.
