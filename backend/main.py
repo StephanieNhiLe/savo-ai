@@ -1,9 +1,12 @@
 import os
+from dotenv import load_dotenv  # Import the load_dotenv function
 from flask import Flask, jsonify, request, Response, stream_with_context
 from flask_cors import CORS
 from gemini_ai import get_therapist_response
 from text_to_speech import convert_text_to_speech
 from sentiment_analysis import analyze_sentiment
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -35,26 +38,15 @@ def analyze_sentiment_endpoint():
         return jsonify({'error': 'No text provided'}), 400
 
     try:
-        # For now, let's implement a simple sentiment analysis
-        # You can replace this with your Hume AI implementation later
-        # This is just to get the endpoint working
-        sentiment = "neutral"  # Default sentiment
-        text = text.lower()
-        
-        # Simple keyword-based analysis
-        positive_words = {'happy', 'good', 'great', 'excellent', 'wonderful', 'love', 'amazing'}
-        negative_words = {'sad', 'bad', 'terrible', 'awful', 'hate', 'angry', 'upset'}
-        
-        words = set(text.split())
-        if any(word in words for word in positive_words):
-            sentiment = "positive"
-        elif any(word in words for word in negative_words):
-            sentiment = "negative"
-
-        return jsonify({'sentiment': sentiment}), 200
+        result = analyze_sentiment(text)
+        return jsonify(result), 200
     except Exception as e:
         print(f"Error during sentiment analysis: {e}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({
+            'sentiment': 'neutral',
+            'score': 0,
+            'magnitude': 0
+        }), 200
 
 @app.route('/stream_audio', methods=['POST'])
 def stream_audio():
@@ -77,7 +69,7 @@ def stream_audio():
             return jsonify({
                 'error': 'Text-to-speech quota exceeded. Please try again later.',
                 'quota_exceeded': True
-            }), 429  # Too Many Requests
+            }), 429  
         print(f"Error streaming audio: {e}")
         return jsonify({'error': str(e)}), 500
 

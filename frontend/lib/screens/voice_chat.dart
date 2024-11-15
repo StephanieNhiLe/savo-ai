@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:just_audio/just_audio.dart';
 import 'dart:typed_data';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class VoiceChat extends StatefulWidget {
   @override
@@ -18,11 +19,15 @@ class _VoiceChatState extends State<VoiceChat> {
   String _aiResponse = '';
   String _sentimentAnalysisResult = '';
   final AudioPlayer _audioPlayer = AudioPlayer();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  
+  String _conversationId = '';
 
   @override
   void initState() {
     super.initState();
     _initializeSpeech();
+    _conversationId = _firestore.collection('conversations').doc().id;
   }
 
   void _initializeSpeech() async {
@@ -30,7 +35,7 @@ class _VoiceChatState extends State<VoiceChat> {
       onStatus: (status) {
         print('Speech status: $status');
         if (status == 'done' && _userMessage.isNotEmpty) {
-          _sendMessage(_userMessage);
+          _sendMessage(_userMessage, _conversationId);
         }
       },
       onError: (error) => print('Speech error: $error'),
@@ -52,11 +57,12 @@ class _VoiceChatState extends State<VoiceChat> {
               _userMessage = result.recognizedWords;
             });
             if (result.finalResult) {
+              _pushUserMessageToFirestore(_userMessage);
               _stopListening();
             }
           },
-          listenFor: Duration(seconds: 30),
-          pauseFor: Duration(seconds: 3),
+          listenFor: Duration(seconds: 60),
+          pauseFor: Duration(seconds: 10),
           partialResults: true,
           cancelOnError: true,
           listenMode: stt.ListenMode.confirmation,
@@ -68,32 +74,83 @@ class _VoiceChatState extends State<VoiceChat> {
   void _stopListening() {
     _speech.stop();
     setState(() => _isListening = false);
-    if (_userMessage.isNotEmpty) {
-      _sendMessage(_userMessage);
+  }
+
+  Future<void> _pushUserMessageToFirestore(String message) async {
+    if (message.trim().isEmpty) return;
+
+    try {
+      String userId = 'user@example.com';
+      Timestamp createdAt = Timestamp.now();
+      Timestamp lastUpdated = Timestamp.now();
+      String title = 'Voice Chat';
+      String status = 'closed';
+
+      DocumentReference conversationRef = _firestore.collection('conversations').doc(_conversationId);
+      DocumentSnapshot conversationSnapshot = await conversationRef.get();
+      if (!conversationSnapshot.exists) {
+        await conversationRef.set({
+          'userId': userId,
+          'createdAt': createdAt,
+          'lastUpdated': lastUpdated,
+          'title': title,
+          'status': status,
+        });
+      }
+
+      await conversationRef.collection('messages').add({
+        'sender': 'user',
+        'content': message,
+        'timestamp': Timestamp.now(),
+        'type': 'text',
+        'metadata': {},
+      });
+      print('User message saved successfully.');
+
+      await _sendMessage(message, _conversationId);
+
+    } catch (e) {
+      print('Error saving user message: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save user message: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
-  Future<void> _sendMessage(String message) async {
+  Future<void> _sendMessage(String message, String conversationId) async {
     if (message.trim().isEmpty) return;
 
     setState(() => _isProcessing = true);
 
-    try { 
-      final sentimentResponse = await http.post(
-        Uri.parse('http://127.0.0.1:5000/analyze_sentiment'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'text': message,
-        }),
-      );
+    try {
+      // Attempt sentiment analysis
+      String sentiment = 'neutral';  // Default sentiment
+      try {
+        final sentimentResponse = await http.post(
+          Uri.parse('http://127.0.0.1:5000/analyze_sentiment'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'text': message,
+          }),
+        );
 
-      if (sentimentResponse.statusCode == 200) {
-        final sentimentData = json.decode(sentimentResponse.body);
-        setState(() {
-          _sentimentAnalysisResult = sentimentData['sentiment'];
-        });
+        if (sentimentResponse.statusCode == 200) {
+          final sentimentData = json.decode(sentimentResponse.body);
+          sentiment = sentimentData['sentiment'] ?? 'neutral';
+        }
+      } catch (e) {
+        print('Sentiment analysis error: $e');
+        // Continue with neutral sentiment
       }
 
+      setState(() {
+        _sentimentAnalysisResult = sentiment;
+      });
+
+      // Process message with AI
       final response = await http.post(
         Uri.parse('http://127.0.0.1:5000/chat'),
         headers: {'Content-Type': 'application/json'},
@@ -104,55 +161,12 @@ class _VoiceChatState extends State<VoiceChat> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        String aiResponse = data['text'].replaceAll('"', '');
         setState(() {
-          _aiResponse = data['text'];
+          _aiResponse = aiResponse;
         });
- 
-        try {
-          final audioResponse = await http.post(
-            Uri.parse('http://127.0.0.1:5000/stream_audio'),
-            headers: {'Content-Type': 'application/json'},
-            body: json.encode({
-              'text': _aiResponse,
-              'voice_id': 'EXAVITQu4vr4xnSDxMaL',
-            }),
-          );
 
-          if (audioResponse.statusCode == 200) {
-            final audioBytes = audioResponse.bodyBytes;
-            await _audioPlayer.setAudioSource(
-              AudioSource.uri(
-                Uri.parse('data:audio/mpeg;base64,' + base64Encode(audioBytes)),
-              ),
-            );
-            await _audioPlayer.play();
-          } else {
-            if (audioResponse.statusCode == 429) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Voice synthesis unavailable - quota exceeded. Please try again later.'),
-                  backgroundColor: Colors.orange,
-                ),
-              );
-            } else {
-              print('Failed to stream audio: ${audioResponse.statusCode}');
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Failed to play audio response'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-          }
-        } catch (audioError) {
-          print('Audio streaming error: $audioError');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Unable to play audio response'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+        await _pushAIResponseToFirestore(aiResponse, conversationId);
       }
     } catch (e) {
       print('Exception occurred: $e');
@@ -164,6 +178,27 @@ class _VoiceChatState extends State<VoiceChat> {
       );
     } finally {
       setState(() => _isProcessing = false);
+    }
+  }
+
+  Future<void> _pushAIResponseToFirestore(String aiResponse, String conversationId) async {
+    try {
+      await _firestore.collection('conversations').doc(conversationId).collection('messages').add({
+        'sender': 'ai',
+        'content': aiResponse,
+        'timestamp': Timestamp.now(),
+        'type': 'text',
+        'metadata': {},
+      });
+      print('AI response saved successfully.');
+    } catch (e) {
+      print('Error saving AI response: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save AI response: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -254,12 +289,16 @@ class _VoiceChatState extends State<VoiceChat> {
 
   IconData _getSentimentIcon(String sentiment) {
     switch (sentiment.toLowerCase()) {
-      case 'positive':
+      case 'very positive':
         return Icons.sentiment_very_satisfied;
-      case 'negative':
-        return Icons.sentiment_very_dissatisfied;
+      case 'positive':
+        return Icons.sentiment_satisfied;
       case 'neutral':
         return Icons.sentiment_neutral;
+      case 'negative':
+        return Icons.sentiment_dissatisfied;
+      case 'very negative':
+        return Icons.sentiment_very_dissatisfied;
       default:
         return Icons.sentiment_neutral;
     }
@@ -267,12 +306,16 @@ class _VoiceChatState extends State<VoiceChat> {
 
   Color _getSentimentColor(String sentiment) {
     switch (sentiment.toLowerCase()) {
+      case 'very positive':
+        return Colors.lightGreen;
       case 'positive':
         return Colors.green;
-      case 'negative':
-        return Colors.red;
       case 'neutral':
         return Colors.grey;
+      case 'negative':
+        return Colors.red;
+      case 'very negative':
+        return Colors.deepOrange;
       default:
         return Colors.grey;
     }
