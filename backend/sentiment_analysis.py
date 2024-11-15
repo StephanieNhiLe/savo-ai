@@ -11,7 +11,6 @@ class SentimentAnalyzer:
         self._initialize_client()
 
     def _initialize_client(self):
-        """Initialize the Google Cloud client using credentials from .env"""
         try:
             credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
             if credentials_path and os.path.exists(credentials_path):
@@ -26,10 +25,6 @@ class SentimentAnalyzer:
             self.client = None
 
     def analyze_sentiment(self, text):
-        """
-        Analyze text sentiment using Google Cloud Natural Language API
-        Returns detailed sentiment for Flutter app compatibility
-        """
         if not self.client:
             return {'sentiment': 'neutral', 'score': 0, 'magnitude': 0}
 
@@ -67,7 +62,4 @@ class SentimentAnalyzer:
 analyzer = SentimentAnalyzer()
 
 def analyze_sentiment(text):
-    """
-    Public function to analyze sentiment, used by main.py
-    """
     return analyzer.analyze_sentiment(text)
