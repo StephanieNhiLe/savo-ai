@@ -179,7 +179,7 @@ class _MoodTrackerState extends State<MoodTracker> {
       lineTouchData: LineTouchData(
         enabled: true,
         touchCallback: (FlTouchEvent event, LineTouchResponse? response) {
-          // Handle touch events if needed
+          // Handle touch events 
         },
         getTouchedSpotIndicator: (LineChartBarData barData, List<int> spotIndexes) {
           return spotIndexes.map((index) {

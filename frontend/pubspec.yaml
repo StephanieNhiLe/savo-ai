@@ -57,6 +57,10 @@ dependencies:
   cupertino_icons: ^1.0.8
   google_generative_ai: ^0.4.6
 
+
+  # assets:
+  #   - lib/assets/savo-ai-logo.png
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
