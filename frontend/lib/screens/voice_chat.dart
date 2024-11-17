@@ -76,6 +76,7 @@ class _VoiceChatState extends State<VoiceChat> {
     setState(() => _isListening = false);
   }
 
+
   Future<void> _sendMessage(String message, String conversationId) async {
     if (message.trim().isEmpty) return;
 

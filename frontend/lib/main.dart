@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'screens/chat.dart';
 import 'screens/location_sharing.dart';
 import 'screens/mood_tracker.dart';
-import 'screens/voice_chat.dart';
+import 'screens/voice_chat.dart'; 
 import 'package:firebase_core/firebase_core.dart';
 import 'services/firebase_options.dart';
 import 'models/circles.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized(); 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.web,  
   );
@@ -22,23 +22,24 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Savo AI',
-      theme: ThemeData(
+      theme: ThemeData( 
         primarySwatch: Colors.blue,
       ),
       home: const HomeScreen(),
     );
   }
 }
-
+ 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        appBar: AppBar(
+        appBar: AppBar( 
           title: const Text(
             'Savo AI',
             style: TextStyle(fontWeight: FontWeight.bold),

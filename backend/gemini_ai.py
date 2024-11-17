@@ -60,6 +60,7 @@ def get_therapist_response(user_message, voice_id):
     Offer empathetic insights or helpful suggestions.
     Present any relevant resources or support options tactfully, without overwhelming.
     User's Message: "{user_message}"
+
     """ 
 
     # prompt = f"""

@@ -40,6 +40,7 @@ def analyze_sentiment_endpoint():
     try:
         result = analyze_sentiment(text)
         print(f"Sentiment analysis result for '{text}': {result}")
+
         return jsonify(result), 200
     except Exception as e:
         print(f"Error during sentiment analysis: {e}")
