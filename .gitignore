@@ -13,3 +13,4 @@ frontend/android/app/src/main/AndroidManifest.xml
 frontend/ios/Runner/AppDelegate.swift
 
 backend/credentials
+./backend/credentials
